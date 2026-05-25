@@ -1,0 +1,136 @@
+/* Mobile-first enhancements */
+@media (max-width: 767px) {
+  html {
+    scroll-padding-top: calc(4.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  section[id] {
+    scroll-margin-top: calc(4.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-x {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Nav bar — CSS transitions instead of JS-driven blur toggles (cheaper on mobile) */
+.nav-bar {
+  transition: background-color 0.35s ease, box-shadow 0.35s ease,
+    border-color 0.35s ease;
+  background-color: var(--nav-bg-top);
+  border-bottom: 1px solid transparent;
+}
+
+.nav-bar--solid {
+  background-color: var(--nav-bg-scrolled);
+  border-bottom-color: var(--nav-border);
+  box-shadow: var(--nav-shadow-scrolled);
+}
+
+.nav-bar--solid .nav-bar__inner {
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+}
+
+.nav-bar__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--nav-accent-line);
+  transform-origin: center;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .nav-bar--solid .nav-bar__inner,
+  .nav-bar .nav-bar__inner {
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    backdrop-filter: blur(12px) saturate(140%);
+  }
+
+  /* Always-readable bar on phones */
+  .nav-bar {
+    background-color: color-mix(
+      in srgb,
+      var(--nav-bg-scrolled) 72%,
+      transparent
+    );
+    border-bottom-color: color-mix(in srgb, var(--nav-border) 60%, transparent);
+  }
+
+  .nav-bar--solid {
+    background-color: var(--nav-bg-scrolled);
+  }
+
+  /* Defer off-screen section paint */
+  .perf-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+  }
+}
+
+@keyframes hero-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+.hero-bounce {
+  animation: hero-bounce 2.5s ease-in-out infinite;
+}
+
+/* Lite mode: applied on mobile via JS */
+html.lite-motion .nav-bar--solid .nav-bar__inner,
+html.lite-motion .nav-bar .nav-bar__inner {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.lite-motion [style*="backdrop-filter"],
+html.lite-motion [style*="backdropFilter"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.lite-motion .perf-section {
+  contain: layout style paint;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-bar,
+  .nav-bar__accent,
+  .hero-bounce {
+    transition: none;
+    animation: none;
+  }
+}

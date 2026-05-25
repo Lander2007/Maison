@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, memo, useCallback } from 'react';
-import { motion, useScroll, useTransform, useSpring, useInView } from 'motion/react';
+import { motion, useScroll, useTransform, useInView } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 import { ImageWithFallback } from './components/figma/ImageWithFallback';
 import { Navigation } from './components/Navigation';
@@ -7,12 +7,14 @@ import { CustomCursor } from './components/CustomCursor';
 import { StaggeredText } from './components/StaggeredText';
 import { SectionDivider } from './components/SectionDivider';
 import { MaskRevealImage } from './components/MaskRevealImage';
-import { ThemeProvider, useTheme } from './components/ThemeContext';
+import { ThemeProvider } from './components/ThemeContext';
 import { CartProvider, useCart } from './components/CartContext';
 import { CartDrawer } from './components/CartDrawer';
 import { NewsletterSection } from './components/NewsletterSection';
 import { BackToTop } from './components/BackToTop';
 import { ShopGridSection } from './components/ShopGridSection';
+import { useIsMobile } from './components/ui/use-mobile';
+import { useLiteAnimations } from './hooks/useLiteAnimations';
 
 export default function App() {
   const [language, setLanguage] = useState<'en' | 'ar'>('en');
@@ -34,18 +36,21 @@ function AppContent({
   setLanguage: (lang: 'en' | 'ar') => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isDark } = useTheme();
   const isRTL = language === 'ar';
+
+  const lite = useLiteAnimations();
 
   useEffect(() => {
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
-  }, [isRTL, language]);
+    document.documentElement.classList.toggle('lite-motion', lite);
+    return () => document.documentElement.classList.remove('lite-motion');
+  }, [isRTL, language, lite]);
 
   return (
     <div
       ref={containerRef}
-      className="overflow-x-hidden transition-colors duration-700"
+      className="overflow-x-hidden"
       style={{ backgroundColor: 'var(--luxury-background)' }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
@@ -56,15 +61,25 @@ function AppContent({
 
       <HeroSection language={language} />
       <SectionDivider />
-      <ParallaxGallery language={language} />
+      <div className="perf-section">
+        <ParallaxGallery language={language} />
+      </div>
       <SectionDivider />
-      <NarrativeSection language={language} />
+      <div className="perf-section">
+        <NarrativeSection language={language} />
+      </div>
       <SectionDivider />
-      <ShopGridSection language={language} />
+      <div className="perf-section">
+        <ShopGridSection language={language} />
+      </div>
       <SectionDivider />
-      <HorizontalProductShowcase language={language} />
+      <div className="perf-section">
+        <HorizontalProductShowcase language={language} />
+      </div>
       <SectionDivider />
-      <NewsletterSection language={language} />
+      <div className="perf-section">
+        <NewsletterSection language={language} />
+      </div>
       <SectionDivider />
       <Footer language={language} />
     </div>
@@ -76,108 +91,181 @@ function AppContent({
    ============================================================================ */
 
 function HeroSection({ language }: { language: 'en' | 'ar' }) {
+  const lite = useLiteAnimations();
+  return lite ? (
+    <HeroSectionLite language={language} />
+  ) : (
+    <HeroSectionAnimated language={language} />
+  );
+}
+
+function HeroSectionLite({ language }: { language: 'en' | 'ar' }) {
+  const isRTL = language === 'ar';
+  const content = getHeroContent(language);
+
+  return (
+    <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden pt-16 pb-8">
+      <HeroBackground animateGlow={false} />
+      <HeroContent isRTL={isRTL} content={content} lite />
+    </section>
+  );
+}
+
+function HeroSectionAnimated({ language }: { language: 'en' | 'ar' }) {
   const { scrollY } = useScroll();
-  const { isDark } = useTheme();
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const scale = useTransform(scrollY, [0, 400], [1, 0.8]);
-
   const isRTL = language === 'ar';
-  const content = {
-    en: {
-      title: 'MAISON',
-      subtitle: 'Quiet Luxury Collection 2026',
-      scroll: 'Scroll to Explore',
-    },
-    ar: {
-      title: 'ميزون',
-      subtitle: 'مجموعة الرفاهية الهادئة ٢٠٢٦',
-      scroll: 'قم بالتمرير للاستكشاف',
-    },
-  };
+  const content = getHeroContent(language);
 
   return (
     <motion.section
       style={{ opacity, scale }}
-      className="relative h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden pt-16 pb-8"
     >
-      {/* Background — adapts to theme */}
-      <div
-        className="absolute inset-0 transition-all duration-700"
-        style={{
-          background: isDark
-            ? 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%)'
-            : 'linear-gradient(135deg, #f5f0e8 0%, #ede6d8 30%, #e8dfd0 60%, #f0ead9 100%)',
-        }}
-      >
+      <HeroBackground animateGlow />
+      <HeroContent isRTL={isRTL} content={content} lite={false} />
+    </motion.section>
+  );
+}
+
+function getHeroContent(language: 'en' | 'ar') {
+  return language === 'en'
+    ? {
+        title: 'MAISON',
+        subtitle: 'Quiet Luxury Collection 2026',
+        scroll: 'Scroll to Explore',
+      }
+    : {
+        title: 'ميزون',
+        subtitle: 'مجموعة الرفاهية الهادئة ٢٠٢٦',
+        scroll: 'قم بالتمرير للاستكشاف',
+      };
+}
+
+function HeroBackground({ animateGlow }: { animateGlow: boolean }) {
+  return (
+    <div
+      className="absolute inset-0"
+      style={{ background: 'var(--hero-bg)' }}
+    >
+      {animateGlow ? (
         <motion.div
-          animate={{
-            backgroundPosition: ['0% 0%', '100% 100%'],
-          }}
+          animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
           transition={{
             duration: 25,
             repeat: Infinity,
             repeatType: 'reverse',
             ease: [0.25, 0.1, 0.25, 1],
           }}
-          className="absolute inset-0 transition-opacity duration-700"
+          className="absolute inset-0"
           style={{
-            opacity: isDark ? 0.15 : 0.25,
-            backgroundImage: isDark
-              ? 'radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.2) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(201, 113, 94, 0.15) 0%, transparent 50%)'
-              : 'radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(181, 136, 99, 0.12) 0%, transparent 50%)',
+            opacity: 'var(--hero-glow-opacity)',
+            backgroundImage: 'var(--hero-glow)',
             backgroundSize: '200% 200%',
           }}
         />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 text-center px-8">
-        <StaggeredText
-          text={content[language].title}
-          className="text-[10vw] md:text-[8vw] lg:text-[7vw] tracking-wider mb-6 block"
+      ) : (
+        <div
+          className="absolute inset-0"
           style={{
-            fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
-            fontWeight: 300,
-            letterSpacing: isRTL ? 'normal' : '0.15em',
-            color: isDark ? '#fafaf8' : '#1a1a1a',
-            transition: 'color 0.7s ease',
+            opacity: 'var(--hero-glow-opacity)',
+            backgroundImage: 'var(--hero-glow)',
           }}
-          delay={0.3}
         />
+      )}
+    </div>
+  );
+}
 
+function HeroContent({
+  isRTL,
+  content,
+  lite,
+}: {
+  isRTL: boolean;
+  content: { title: string; subtitle: string; scroll: string };
+  lite: boolean;
+}) {
+  const titleStyle = {
+    fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
+    fontWeight: 300,
+    letterSpacing: isRTL ? 'normal' : '0.15em',
+    color: 'var(--hero-title-color)',
+  };
+
+  const subtitleStyle = {
+    fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
+    fontWeight: 300,
+    color: 'var(--hero-subtitle-color)',
+  };
+
+  return (
+    <div className="relative z-10 text-center px-6 sm:px-8 max-w-[100vw]">
+      <StaggeredText
+        text={content.title}
+        className="text-[14vw] sm:text-[10vw] md:text-[8vw] lg:text-[7vw] tracking-wider mb-4 sm:mb-6 block"
+        style={titleStyle}
+        delay={0.3}
+      />
+
+      {lite ? (
+        <p
+          className="text-xs sm:text-sm md:text-base tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-10 sm:mb-16 px-2"
+          style={subtitleStyle}
+        >
+          {content.subtitle}
+        </p>
+      ) : (
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-sm md:text-base tracking-[0.3em] uppercase mb-16"
-          style={{
-            fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
-            fontWeight: 300,
-            color: isDark ? '#d4af37' : '#9a7b2e',
-            transition: 'color 0.7s ease',
-          }}
+          className="text-xs sm:text-sm md:text-base tracking-[0.2em] sm:tracking-[0.3em] uppercase mb-10 sm:mb-16 px-2"
+          style={subtitleStyle}
         >
-          {content[language].subtitle}
+          {content.subtitle}
         </motion.p>
+      )}
 
+      {lite ? (
+        <div className="flex flex-col items-center gap-2 hero-bounce">
+          <span
+            className="text-xs tracking-widest uppercase"
+            style={{
+              fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
+              color: 'var(--hero-scroll-muted)',
+            }}
+          >
+            {content.scroll}
+          </span>
+          <ChevronDown
+            className="w-6 h-6"
+            style={{ color: 'var(--hero-subtitle-color)' }}
+          />
+        </div>
+      ) : (
         <motion.div
           animate={{ y: [0, 12, 0] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: [0.25, 0.1, 0.25, 1] }}
           className="flex flex-col items-center gap-2"
         >
           <span
-            className="text-xs tracking-widest uppercase transition-colors duration-700"
+            className="text-xs tracking-widest uppercase"
             style={{
               fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
-              color: isDark ? 'rgba(250, 250, 248, 0.7)' : 'rgba(26, 26, 26, 0.5)',
+              color: 'var(--hero-scroll-muted)',
             }}
           >
-            {content[language].scroll}
+            {content.scroll}
           </span>
-          <ChevronDown className="w-6 h-6 transition-colors duration-700" style={{ color: isDark ? '#d4af37' : '#9a7b2e' }} />
+          <ChevronDown
+            className="w-6 h-6"
+            style={{ color: 'var(--hero-subtitle-color)' }}
+          />
         </motion.div>
-      </div>
-    </motion.section>
+      )}
+    </div>
   );
 }
 
@@ -222,7 +310,7 @@ function ParallaxGallery({ language }: { language: 'en' | 'ar' }) {
   return (
     <section
       id="collection"
-      className="py-32 px-4 md:px-12 lg:px-24 transition-colors duration-700"
+      className="py-16 sm:py-24 md:py-32 px-4 md:px-12 lg:px-24 "
       style={{ backgroundColor: 'var(--luxury-background)' }}
     >
       <motion.div
@@ -230,11 +318,11 @@ function ParallaxGallery({ language }: { language: 'en' | 'ar' }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-center mb-24"
+        className="text-center mb-12 sm:mb-24"
       >
         <StaggeredText
           text={content[language].title}
-          className="text-5xl md:text-7xl lg:text-8xl mb-6 block"
+          className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl mb-4 sm:mb-6 block"
           style={{
             fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
             fontWeight: 300,
@@ -254,7 +342,7 @@ function ParallaxGallery({ language }: { language: 'en' | 'ar' }) {
         </motion.p>
       </motion.div>
 
-      <div className="grid grid-cols-12 gap-4 md:gap-8 auto-rows-[300px] md:auto-rows-[400px]">
+      <div className="grid grid-cols-12 gap-3 sm:gap-4 md:gap-8 auto-rows-[220px] sm:auto-rows-[280px] md:auto-rows-[400px]">
         {collectionImages.map((image, index) => (
           <ParallaxImage key={index} image={image} index={index} />
         ))}
@@ -270,6 +358,7 @@ const ParallaxImage = memo(function ParallaxImage({
   image: { url: string; alt: string };
   index: number;
 }) {
+  const lite = useLiteAnimations();
   const layouts = [
     'col-span-12 md:col-span-7 row-span-2',
     'col-span-12 md:col-span-5 row-span-1',
@@ -278,6 +367,25 @@ const ParallaxImage = memo(function ParallaxImage({
     'col-span-12 md:col-span-6 row-span-1',
     'col-span-12 md:col-span-6 row-span-2',
   ];
+  const layout = layouts[index % layouts.length];
+  const imgUrl = lite
+    ? image.url.replace(/w=1080/, 'w=600')
+    : image.url;
+
+  if (lite) {
+    return (
+      <div
+        className={`relative overflow-hidden ${layout}`}
+        data-cursor-text="VIEW"
+      >
+        <ImageWithFallback
+          src={imgUrl}
+          alt={image.alt}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
 
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-15%' });
@@ -296,7 +404,7 @@ const ParallaxImage = memo(function ParallaxImage({
         delay: index * 0.12,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      className={`relative overflow-hidden ${layouts[index % layouts.length]} group`}
+      className={`relative overflow-hidden ${layout} group`}
       data-cursor-text="VIEW"
     >
       <MaskRevealImage src={image.url} alt={image.alt} className="w-full h-full" />
@@ -315,6 +423,7 @@ const ParallaxImage = memo(function ParallaxImage({
    ============================================================================ */
 
 function NarrativeSection({ language }: { language: 'en' | 'ar' }) {
+  const lite = useLiteAnimations();
   const lifestyleImages = [
     'https://images.unsplash.com/photo-1593528625646-d705402054ba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaWdoJTIwZmFzaGlvbiUyMGxpZmVzdHlsZSUyMGVsZWdhbnR8ZW58MXx8fHwxNzc5NzE4MjAyfDA&ixlib=rb-4.1.0&q=80&w=1080',
     'https://images.unsplash.com/photo-1557161622-5f50ca344787?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxoaWdoJTIwZmFzaGlvbiUyMGxpZmVzdHlsZSUyMGVsZWdhbnR8ZW58MXx8fHwxNzc5NzE4MjAyfDA&ixlib=rb-4.1.0&q=80&w=1080',
@@ -348,7 +457,7 @@ function NarrativeSection({ language }: { language: 'en' | 'ar' }) {
     <section
       id="story"
       ref={containerRef}
-      className="min-h-screen py-32 transition-colors duration-700"
+      className="min-h-0 py-16 sm:py-24 md:py-32 "
       style={{
         background: 'var(--luxury-narrative-bg, linear-gradient(135deg, var(--luxury-background) 0%, var(--luxury-background-alt, #f5f5f3) 100%))',
       }}
@@ -356,16 +465,10 @@ function NarrativeSection({ language }: { language: 'en' | 'ar' }) {
       <div className="container mx-auto px-4 md:px-12 lg:px-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
           {/* Sticky Text Column */}
-          <motion.div
-            initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-            className="lg:sticky lg:top-32 lg:self-start"
-          >
+          <div className="lg:sticky lg:top-32 lg:self-start">
             <StaggeredText
               text={`${content[language].title[0]} ${content[language].title[1]}`}
-              className="text-4xl md:text-6xl lg:text-7xl mb-8 leading-tight block"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl mb-6 sm:mb-8 leading-tight block"
               style={{
                 fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
                 fontWeight: 300,
@@ -379,24 +482,30 @@ function NarrativeSection({ language }: { language: 'en' | 'ar' }) {
                 color: 'var(--luxury-foreground-muted)',
               }}
             >
-              {content[language].paragraphs.map((paragraph, index) => (
-                <motion.p
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    duration: 0.8,
-                    delay: index * 0.2,
-                    ease: [0.25, 0.1, 0.25, 1],
-                  }}
-                  className="text-lg leading-relaxed"
-                >
-                  {paragraph}
-                </motion.p>
-              ))}
+              {content[language].paragraphs.map((paragraph, index) =>
+                lite ? (
+                  <p key={index} className="text-base sm:text-lg leading-relaxed">
+                    {paragraph}
+                  </p>
+                ) : (
+                  <motion.p
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{
+                      duration: 0.8,
+                      delay: index * 0.2,
+                      ease: [0.25, 0.1, 0.25, 1],
+                    }}
+                    className="text-base sm:text-lg leading-relaxed"
+                  >
+                    {paragraph}
+                  </motion.p>
+                ),
+              )}
             </div>
-          </motion.div>
+          </div>
 
           {/* Sticky Parallax Images — each card sticks and the next slides over it */}
           <div className="space-y-0">
@@ -419,16 +528,34 @@ const StickyParallaxImage = memo(function StickyParallaxImage({
   index: number;
   total: number;
 }) {
+  const lite = useLiteAnimations();
+  const stickyTop = 100 + index * 20;
+  const imgSrc = lite ? src.replace(/w=1080/, 'w=600') : src;
+
+  if (lite) {
+    return (
+      <div className="relative mb-6 last:mb-0">
+        <div
+          className="relative aspect-[3/4] overflow-hidden rounded-sm"
+          style={{ border: '1px solid var(--showcase-card-border)' }}
+        >
+          <ImageWithFallback
+            src={imgSrc}
+            alt={`Lifestyle image ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+    );
+  }
+
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-15%' });
-
-  // Each card sticks at a slightly lower position, creating the overlap effect
-  const stickyTop = 100 + index * 20;
 
   return (
     <div
       ref={ref}
-      className="sticky mb-[-60px] last:mb-0"
+      className="relative md:sticky mb-6 md:mb-[-60px] last:mb-0"
       style={{
         top: `${stickyTop}px`,
         zIndex: index + 1,
@@ -457,13 +584,6 @@ const StickyParallaxImage = memo(function StickyParallaxImage({
           src={src}
           alt={`Lifestyle image ${index + 1}`}
           className="w-full h-full"
-        />
-        {/* Dark mode glow effect */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-0 dark-glow-overlay transition-opacity duration-700"
-          style={{
-            boxShadow: 'inset 0 0 60px rgba(212, 175, 55, 0.08)',
-          }}
         />
       </motion.div>
     </div>
@@ -624,6 +744,7 @@ function HorizontalProductShowcase({ language }: { language: 'en' | 'ar' }) {
 
   const products = productsData[language];
   const isRTL = language === 'ar';
+  const isMobile = useIsMobile();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -634,14 +755,14 @@ function HorizontalProductShowcase({ language }: { language: 'en' | 'ar' }) {
   const x = useTransform(scrollYProgress, [0, 1], isRTL ? ['-50%', '0%'] : ['0%', '-50%']);
 
   const content = {
-    en: { title: 'Signature Pieces', cta: 'Add to Bag' },
-    ar: { title: 'القطع المميزة', cta: 'أضف إلى الحقيبة' },
+    en: { title: 'Signature Pieces', cta: 'Add to Bag', swipe: 'Swipe to explore' },
+    ar: { title: 'القطع المميزة', cta: 'أضف إلى الحقيبة', swipe: 'اسحب للاستكشاف' },
   };
 
   return (
     <section
       ref={containerRef}
-      className="py-32 overflow-hidden relative transition-colors duration-700"
+      className="py-16 sm:py-24 md:py-32 overflow-hidden relative "
       style={{ backgroundColor: 'var(--luxury-background)' }}
     >
       {/* Subtle gradient overlay */}
@@ -653,10 +774,10 @@ function HorizontalProductShowcase({ language }: { language: 'en' | 'ar' }) {
         }}
       />
 
-      <div className="mb-20 px-4 md:px-12 lg:px-24 relative z-10">
+      <div className="mb-8 sm:mb-12 md:mb-20 px-4 md:px-12 lg:px-24 relative z-10">
         <StaggeredText
           text={content[language].title}
-          className="text-4xl md:text-6xl lg:text-7xl text-center block"
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl text-center block"
           style={{
             fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
             fontWeight: 300,
@@ -664,18 +785,49 @@ function HorizontalProductShowcase({ language }: { language: 'en' | 'ar' }) {
             color: 'var(--luxury-foreground)',
           }}
         />
+        {isMobile && (
+          <p
+            className="text-center mt-3 text-[10px] tracking-[0.2em] uppercase"
+            style={{
+              fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
+              color: 'var(--luxury-foreground-muted)',
+            }}
+          >
+            {content[language].swipe}
+          </p>
+        )}
       </div>
 
-      <motion.div style={{ x }} className="flex gap-8 px-4 md:px-12 relative z-10">
-        {[...products, ...products].map((product, index) => (
-          <ProductCard
-            key={`${product.id}-${index}`}
-            product={product}
-            language={language}
-            ctaText={content[language].cta}
-          />
-        ))}
-      </motion.div>
+      {isMobile ? (
+        <div
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 pb-2 relative z-10"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={{
+                ...product,
+                url: product.url.replace(/w=1080/, "w=640"),
+              }}
+              language={language}
+              ctaText={content[language].cta}
+              showDetailsOnMobile
+            />
+          ))}
+        </div>
+      ) : (
+        <motion.div style={{ x }} className="flex gap-8 px-4 md:px-12 relative z-10">
+          {[...products, ...products].map((product, index) => (
+            <ProductCard
+              key={`${product.id}-${index}`}
+              product={product}
+              language={language}
+              ctaText={content[language].cta}
+            />
+          ))}
+        </motion.div>
+      )}
     </section>
   );
 }
@@ -684,17 +836,18 @@ const ProductCard = memo(function ProductCard({
   product,
   language,
   ctaText,
+  showDetailsOnMobile = false,
 }: {
   product: { id: number; url: string; name: string; price: string; priceValue: number };
   language: 'en' | 'ar';
   ctaText: string;
+  showDetailsOnMobile?: boolean;
 }) {
+  const lite = useLiteAnimations();
   const [isHovered, setIsHovered] = useState(false);
   const { addItem } = useCart();
   const isRTL = language === 'ar';
-
-  const handleHoverStart = useCallback(() => setIsHovered(true), []);
-  const handleHoverEnd = useCallback(() => setIsHovered(false), []);
+  const showDetails = showDetailsOnMobile || isHovered;
 
   const handleAddToCart = useCallback(
     (e: React.MouseEvent) => {
@@ -707,14 +860,84 @@ const ProductCard = memo(function ProductCard({
         url: product.url,
       });
     },
-    [addItem, product]
+    [addItem, product],
   );
+
+  const cardClass =
+    'relative flex-shrink-0 snap-center w-[min(88vw,340px)] sm:w-[400px] md:w-[500px] h-[480px] sm:h-[600px] md:h-[700px] cursor-pointer group';
+
+  const detailsBlock = (
+    <div
+      className="absolute bottom-6 sm:bottom-12 left-4 right-4 sm:left-8 sm:right-8"
+      style={{
+        color: 'var(--luxury-offwhite)',
+        opacity: showDetailsOnMobile || showDetails ? 1 : 0,
+        transform: showDetailsOnMobile || showDetails ? 'none' : 'translateY(20px)',
+      }}
+    >
+      <h3
+        className="text-2xl sm:text-3xl mb-2 sm:mb-3"
+        style={{
+          fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
+          fontWeight: 300,
+        }}
+      >
+        {product.name}
+      </h3>
+      <p
+        className="text-xl tracking-wider mb-5"
+        style={{
+          fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
+          fontWeight: 300,
+          color: 'var(--luxury-champagne)',
+        }}
+      >
+        {product.price}
+      </p>
+      <button
+        type="button"
+        onClick={handleAddToCart}
+        className="px-6 py-2.5 text-xs tracking-[0.15em] uppercase rounded-sm"
+        style={{
+          fontFamily: isRTL ? 'var(--font-sans-ar)' : 'var(--font-sans)',
+          fontWeight: 500,
+          backgroundColor: 'var(--luxury-champagne)',
+          color: 'var(--luxury-midnight)',
+          boxShadow: '0 2px 12px rgba(212, 175, 55, 0.3)',
+        }}
+      >
+        {ctaText}
+      </button>
+    </div>
+  );
+
+  if (lite || showDetailsOnMobile) {
+    return (
+      <div className={cardClass} data-cursor-text="SHOP">
+        <div
+          className="relative w-full h-full overflow-hidden"
+          style={{ border: '1px solid var(--showcase-card-border)' }}
+        >
+          <ImageWithFallback
+            src={product.url}
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'var(--showcase-card-overlay)' }}
+          />
+          {detailsBlock}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
-      onHoverStart={handleHoverStart}
-      onHoverEnd={handleHoverEnd}
-      className="relative flex-shrink-0 w-[400px] md:w-[500px] h-[600px] md:h-[700px] cursor-pointer group"
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className={cardClass}
       data-cursor-text="SHOP"
     >
       <div
@@ -732,22 +955,20 @@ const ProductCard = memo(function ProductCard({
             className="w-full h-full object-cover"
           />
         </motion.div>
-
         <motion.div
-          animate={{ opacity: isHovered ? 1 : 0 }}
+          animate={{ opacity: showDetails ? 1 : 0 }}
           transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           className="absolute inset-0"
           style={{ background: 'var(--showcase-card-overlay)' }}
         />
-
         <motion.div
-          animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
+          animate={{ y: showDetails ? 0 : 20, opacity: showDetails ? 1 : 0 }}
           transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute bottom-12 left-8 right-8"
+          className="absolute bottom-6 sm:bottom-12 left-4 right-4 sm:left-8 sm:right-8"
           style={{ color: 'var(--luxury-offwhite)' }}
         >
           <h3
-            className="text-3xl mb-3"
+            className="text-2xl sm:text-3xl mb-2 sm:mb-3"
             style={{
               fontFamily: isRTL ? 'var(--font-serif-ar)' : 'var(--font-serif)',
               fontWeight: 300,
@@ -765,8 +986,6 @@ const ProductCard = memo(function ProductCard({
           >
             {product.price}
           </p>
-
-          {/* Add to Bag button */}
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -820,11 +1039,11 @@ function Footer({ language }: { language: 'en' | 'ar' }) {
   return (
     <footer
       id="contact"
-      className="py-20 px-4 md:px-12 lg:px-24 transition-colors duration-700"
+      className="py-12 sm:py-16 md:py-20 px-4 md:px-12 lg:px-24 "
       style={{ backgroundColor: 'var(--luxury-background)' }}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 mb-10 sm:mb-16">
           <div>
             <motion.h3
               initial={{ opacity: 0, y: 20 }}

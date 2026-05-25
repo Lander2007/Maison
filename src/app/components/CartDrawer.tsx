@@ -81,7 +81,6 @@ export function CartDrawer({ language }: CartDrawerProps) {
             className="fixed inset-0 z-[9998]"
             style={{
               backgroundColor: 'rgba(10, 10, 10, 0.6)',
-              backdropFilter: 'blur(4px)',
             }}
           />
 
@@ -91,7 +90,7 @@ export function CartDrawer({ language }: CartDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: isRTL ? '-100%' : '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className={`fixed top-0 ${isRTL ? 'left-0' : 'right-0'} h-full w-full max-w-md z-[9999] flex flex-col`}
+            className={`fixed top-0 ${isRTL ? 'left-0' : 'right-0'} h-full w-full max-w-none sm:max-w-md z-[9999] flex flex-col safe-top safe-bottom`}
             style={{
               backgroundColor: 'var(--luxury-background)',
               borderLeft: isRTL ? 'none' : '1px solid rgba(212, 175, 55, 0.15)',

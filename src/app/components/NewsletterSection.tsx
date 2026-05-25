@@ -85,14 +85,14 @@ export function NewsletterSection({ language }: NewsletterSectionProps) {
   const validationAttr = state === "idle" ? "idle" : state;
 
   return (
-    <section className="relative py-32 px-4 md:px-12 lg:px-24 overflow-hidden transition-colors duration-700">
+    <section className="relative py-16 sm:py-24 md:py-32 px-4 md:px-12 lg:px-24 overflow-hidden">
       <div
-        className="absolute inset-0 transition-all duration-700"
+        className="absolute inset-0"
         style={{ background: "var(--newsletter-bg)" }}
       />
 
       <div
-        className="absolute inset-0 pointer-events-none transition-all duration-700"
+        className="absolute inset-0 pointer-events-none"
         style={{ background: "var(--newsletter-orbs)" }}
       />
 
@@ -108,7 +108,7 @@ export function NewsletterSection({ language }: NewsletterSectionProps) {
           className="text-center mb-12"
         >
           <h2
-            className="text-5xl md:text-6xl lg:text-7xl mb-6 font-light tracking-tight"
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 sm:mb-6 font-light tracking-tight"
             style={{
               fontFamily: isRTL ? "var(--font-serif-ar)" : "var(--font-serif)",
               letterSpacing: isRTL ? "normal" : "0.02em",
@@ -121,7 +121,7 @@ export function NewsletterSection({ language }: NewsletterSectionProps) {
             {t.title}
           </h2>
           <p
-            className="text-lg md:text-xl leading-relaxed max-w-xl mx-auto"
+            className="text-base sm:text-lg md:text-xl leading-relaxed max-w-xl mx-auto px-1"
             style={{
               fontFamily: isRTL ? "var(--font-sans-ar)" : "var(--font-sans)",
               fontWeight: 300,
@@ -146,13 +146,13 @@ export function NewsletterSection({ language }: NewsletterSectionProps) {
             className="w-full max-w-2xl p-2 rounded-2xl"
             style={{
               background: "var(--newsletter-form-bg)",
-              backdropFilter: "blur(20px)",
+              backdropFilter: undefined,
               border: "1px solid var(--newsletter-form-border)",
               boxShadow: "var(--newsletter-form-shadow)",
             }}
           >
-            <div className="relative flex items-center gap-2">
-              <div className="relative flex-1">
+            <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="relative flex-1 w-full">
                 <label htmlFor="newsletter-email" className="sr-only">
                   {t.subscribe}
                 </label>
@@ -234,7 +234,7 @@ export function NewsletterSection({ language }: NewsletterSectionProps) {
                 disabled={state === "submitted"}
                 whileHover={state !== "submitted" ? { scale: 1.02, y: -2 } : {}}
                 whileTap={state !== "submitted" ? { scale: 0.98 } : {}}
-                className={`px-7 py-4 md:py-5 text-sm md:text-base tracking-wide uppercase rounded-xl font-medium transition-all duration-300 flex items-center gap-2 whitespace-nowrap flex-shrink-0`}
+                className="w-full sm:w-auto px-7 py-4 md:py-5 text-sm md:text-base tracking-wide uppercase rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0 touch-target"
                 style={{
                   fontFamily: isRTL
                     ? "var(--font-sans-ar)"

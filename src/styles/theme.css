@@ -15,6 +15,30 @@
   --luxury-champagne: #d4af37;
   --luxury-terracotta: #c9715e;
 
+  /* Hero */
+  --hero-bg: linear-gradient(
+    135deg,
+    #f5f0e8 0%,
+    #ede6d8 30%,
+    #e8dfd0 60%,
+    #f0ead9 100%
+  );
+  --hero-glow: radial-gradient(
+      circle at 20% 50%,
+      rgba(212, 175, 55, 0.15) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(181, 136, 99, 0.12) 0%,
+      transparent 50%
+    );
+  --hero-glow-opacity: 0.25;
+  --hero-title-color: #1a1a1a;
+  --hero-subtitle-color: #9a7b2e;
+  --hero-scroll-muted: rgba(26, 26, 26, 0.5);
+  --theme-toggle-bg: rgba(10, 10, 10, 0.05);
+
   /* Component convenience tokens */
   --luxury-overlay: linear-gradient(
     to top,
@@ -172,6 +196,22 @@ input[data-validation="submitted"] {
   --luxury-background-alt: #111111;
   --luxury-foreground: #fafaf8;
   --luxury-foreground-muted: rgba(250, 250, 248, 0.55);
+  --hero-bg: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  --hero-glow: radial-gradient(
+      circle at 20% 50%,
+      rgba(212, 175, 55, 0.2) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(201, 113, 94, 0.15) 0%,
+      transparent 50%
+    );
+  --hero-glow-opacity: 0.15;
+  --hero-title-color: #fafaf8;
+  --hero-subtitle-color: #d4af37;
+  --hero-scroll-muted: rgba(250, 250, 248, 0.7);
+  --theme-toggle-bg: rgba(212, 175, 55, 0.1);
   --luxury-narrative-bg: linear-gradient(135deg, #0b0b0b 0%, #111111 100%);
   --showcase-card-overlay: linear-gradient(
     to top,
@@ -332,20 +372,25 @@ input[data-validation="submitted"] {
     @apply border-border outline-ring/50;
   }
 
-  /* Ultra-fluid theme transitions */
   html {
-    transition:
-      background-color 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
-      color 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  /* Instant theme swap — avoids animating hundreds of elements */
+  html.theme-changing,
+  html.theme-changing * {
+    transition: none !important;
+    animation-duration: 0.001ms !important;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     cursor: none;
-    transition:
-      background-color 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
-      color 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   /* Form elements: make inputs, textareas and buttons theme-aware */
@@ -356,9 +401,7 @@ input[data-validation="submitted"] {
     color: var(--input-text);
     border: 1px solid var(--color-border);
     transition:
-      background-color 0.3s ease,
-      color 0.3s ease,
-      border-color 0.3s ease,
+      border-color 0.2s ease,
       box-shadow 0.2s ease;
   }
 
@@ -378,10 +421,8 @@ input[data-validation="submitted"] {
     border-color: var(--saas-accent-purple);
   }
 
-  button {
-    transition:
-      background-color 0.25s ease,
-      color 0.25s ease;
+  button:not(.theme-toggle-btn) {
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
   body::before {

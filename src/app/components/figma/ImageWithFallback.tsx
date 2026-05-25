@@ -7,9 +7,11 @@ const ERROR_IMG_SRC =
 const LOCAL_FALLBACK = "/assets/placeholder.svg";
 
 export function ImageWithFallback(
-  props: React.ImgHTMLAttributes<HTMLImageElement>,
+  props: React.ImgHTMLAttributes<HTMLImageElement> & {
+    fetchPriority?: "high" | "low" | "auto";
+  },
 ) {
-  const { src, alt, style, className, ...rest } = props;
+  const { src, alt, style, className, fetchPriority, ...rest } = props;
 
   const [didError, setDidError] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -86,9 +88,9 @@ export function ImageWithFallback(
         opacity: isLoaded ? 1 : 0,
         transition: "opacity 0.5s ease-in-out",
       }}
-      loading="lazy"
+      loading={fetchPriority === "high" ? "eager" : "lazy"}
       decoding="async"
-      crossOrigin="anonymous"
+      fetchPriority={fetchPriority}
       referrerPolicy="no-referrer"
       {...rest}
       onLoad={handleLoad}

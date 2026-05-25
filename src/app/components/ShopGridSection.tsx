@@ -5,6 +5,7 @@ import { ShoppingBag, Star } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useCart } from "./CartContext";
 import { StaggeredText } from "./StaggeredText";
+import { useLiteAnimations } from "../hooks/useLiteAnimations";
 
 interface ShopItem {
   id: number;
@@ -184,6 +185,7 @@ interface ShopGridSectionProps {
 }
 
 export function ShopGridSection({ language }: ShopGridSectionProps) {
+  const lite = useLiteAnimations();
   const isRTL = language === "ar";
   const [activeCategory, setActiveCategory] = useState(0); // 0 = All
 
@@ -205,7 +207,7 @@ export function ShopGridSection({ language }: ShopGridSectionProps) {
   return (
     <section
       id="shop"
-      className="py-24 md:py-32 px-4 md:px-12 lg:px-24 transition-colors duration-700"
+      className="py-14 sm:py-20 md:py-32 px-4 md:px-12 lg:px-24"
       style={{ backgroundColor: "var(--luxury-background)" }}
       dir={isRTL ? "rtl" : "ltr"}
     >
@@ -219,7 +221,7 @@ export function ShopGridSection({ language }: ShopGridSectionProps) {
       >
         <StaggeredText
           text={content[language].title}
-          className="text-5xl md:text-7xl lg:text-8xl mb-4 block"
+          className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl mb-4 block"
           style={{
             fontFamily: isRTL ? "var(--font-serif-ar)" : "var(--font-serif)",
             fontWeight: 300,
@@ -244,7 +246,8 @@ export function ShopGridSection({ language }: ShopGridSectionProps) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-        className="flex flex-wrap justify-center gap-2 mb-14"
+        className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory gap-2 mb-10 sm:mb-14 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:justify-center sm:overflow-visible"
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
         {categories.map((cat, i) => (
           <motion.button
@@ -252,7 +255,7 @@ export function ShopGridSection({ language }: ShopGridSectionProps) {
             onClick={() => setActiveCategory(i)}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
-            className="px-5 py-2 text-xs tracking-[0.15em] uppercase rounded-full transition-all duration-400"
+            className="flex-shrink-0 snap-start px-5 py-2.5 text-xs tracking-[0.15em] uppercase rounded-full transition-all duration-400 touch-target"
             style={{
               fontFamily: isRTL ? "var(--font-sans-ar)" : "var(--font-sans)",
               backgroundColor:
@@ -276,19 +279,17 @@ export function ShopGridSection({ language }: ShopGridSectionProps) {
       </motion.div>
 
       {/* Product Grid */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
-      >
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 md:gap-8">
         {filtered.map((item, index) => (
           <ShopCard
             key={item.id}
             item={item}
             language={language}
             index={index}
+            lite={lite}
           />
         ))}
-      </motion.div>
+      </div>
     </section>
   );
 }
@@ -297,13 +298,13 @@ const ShopCard = memo(function ShopCard({
   item,
   language,
   index,
+  lite,
 }: {
   item: ShopItem;
   language: "en" | "ar";
   index: number;
+  lite: boolean;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-10%" });
   const { addItem, lastAddedId } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const isRTL = language === "ar";
@@ -328,23 +329,10 @@ const ShopCard = memo(function ShopCard({
     [addItem, item, name, price],
   );
 
-  return (
-    <motion.div
-      ref={ref}
-      layout
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{
-        duration: 0.65,
-        delay: (index % 4) * 0.09,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className="group flex flex-col"
-      style={{ cursor: "pointer" }}
-      data-cursor-text="SHOP"
-    >
+  const imgUrl = lite ? item.url.replace(/w=800/, "w=480") : item.url;
+
+  const cardInner = (
+    <>
       {/* Image Container */}
       <div
         className="relative overflow-hidden rounded-sm mb-4"
@@ -369,31 +357,25 @@ const ShopCard = memo(function ShopCard({
                   : "var(--luxury-foreground)",
               fontFamily: "var(--font-sans)",
               fontWeight: 600,
-              backdropFilter: "blur(8px)",
             }}
           >
             {badge}
           </div>
         )}
 
-        {/* Image */}
-        <motion.div
-          animate={{ scale: isHovered ? 1.06 : 1 }}
-          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-          className="w-full h-full"
-        >
+        <div className="w-full h-full">
           <ImageWithFallback
-            src={item.url}
+            src={imgUrl}
             alt={name}
             className="w-full h-full object-cover"
           />
-        </motion.div>
+        </div>
 
-        {/* Hover Overlay */}
+        {/* Hover / touch overlay */}
         <motion.div
           animate={{ opacity: isHovered ? 1 : 0 }}
           transition={{ duration: 0.4 }}
-          className="absolute inset-0 flex items-end justify-center pb-6"
+          className="absolute inset-0 hidden sm:flex items-end justify-center pb-6"
           style={{ background: "var(--luxury-overlay)" }}
         >
           <motion.button
@@ -419,10 +401,32 @@ const ShopCard = memo(function ShopCard({
                 : "Add to Bag"}
           </motion.button>
         </motion.div>
+
+        {/* Mobile: always-visible add button */}
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="sm:hidden absolute bottom-2 left-2 right-2 flex items-center justify-center gap-1.5 py-2.5 rounded-sm text-[10px] tracking-[0.12em] uppercase"
+          style={{
+            backgroundColor: justAdded ? "#4ade80" : "var(--luxury-champagne)",
+            color: "var(--luxury-midnight)",
+            fontFamily: isRTL ? "var(--font-sans-ar)" : "var(--font-sans)",
+            fontWeight: 600,
+          }}
+        >
+          <ShoppingBag className="w-3 h-3" />
+          {justAdded
+            ? isRTL
+              ? "تم ✓"
+              : "Added ✓"
+            : isRTL
+              ? "أضف"
+              : "Add"}
+        </button>
       </div>
 
       {/* Text Info */}
-      <div className="flex flex-col gap-1 px-1">
+      <div className="flex flex-col gap-0.5 sm:gap-1 px-0.5 sm:px-1">
         <span
           className="text-[10px] tracking-[0.2em] uppercase"
           style={{
@@ -435,7 +439,7 @@ const ShopCard = memo(function ShopCard({
         </span>
         <div className="flex items-center justify-between gap-2">
           <h3
-            className="text-sm md:text-base leading-snug"
+            className="text-xs sm:text-sm md:text-base leading-snug line-clamp-2"
             style={{
               fontFamily: isRTL ? "var(--font-serif-ar)" : "var(--font-serif)",
               fontWeight: 400,
@@ -472,6 +476,43 @@ const ShopCard = memo(function ShopCard({
           ))}
         </div>
       </div>
+    </>
+  );
+
+  if (lite) {
+    return (
+      <div
+        className="group flex flex-col"
+        style={{ cursor: "pointer" }}
+        data-cursor-text="SHOP"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {cardInner}
+      </div>
+    );
+  }
+
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{
+        duration: 0.65,
+        delay: (index % 4) * 0.09,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className="group flex flex-col"
+      style={{ cursor: "pointer" }}
+      data-cursor-text="SHOP"
+    >
+      {cardInner}
     </motion.div>
   );
 });
