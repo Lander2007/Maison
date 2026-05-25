@@ -36,6 +36,19 @@
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* Back to top — above thumb zone + home indicator */
+.back-to-top {
+  bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  right: calc(1.25rem + env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+  .back-to-top {
+    bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    right: calc(2rem + env(safe-area-inset-right, 0px));
+  }
+}
+
 /* Nav bar — CSS transitions instead of JS-driven blur toggles (cheaper on mobile) */
 .nav-bar {
   transition: background-color 0.35s ease, box-shadow 0.35s ease,
@@ -67,11 +80,64 @@
   pointer-events: none;
 }
 
+/* Nav inner horizontal rhythm */
+.nav-bar__inner {
+  padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 768px) {
+  .nav-bar__inner {
+    padding-left: max(2.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(2.5rem, env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-bar__inner {
+    padding-left: max(3.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(3.5rem, env(safe-area-inset-right, 0px));
+  }
+}
+
+.nav-icon-wrap {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+}
+
+.nav-icon-wrap--compact .theme-toggle-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
 @media (max-width: 767px) {
   .nav-bar--solid .nav-bar__inner,
   .nav-bar .nav-bar__inner {
     -webkit-backdrop-filter: blur(12px) saturate(140%);
     backdrop-filter: blur(12px) saturate(140%);
+  }
+
+  .nav-bar__brand {
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+  }
+
+  .nav-bar__actions {
+    gap: 0.5rem;
+    margin-inline-end: 0;
+  }
+
+  .nav-bar__action-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+
+  .nav-icon-wrap--compact {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   /* Always-readable bar on phones */

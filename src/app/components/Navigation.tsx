@@ -106,7 +106,7 @@ export const Navigation = memo(function Navigation({
           }}
         />
 
-        <nav className="nav-bar__inner mx-auto max-w-7xl px-4 sm:px-5 md:px-10 lg:px-14 safe-x">
+        <nav className="nav-bar__inner mx-auto max-w-7xl safe-x">
           <div
             className={`flex items-center justify-between transition-[height] duration-300 ${
               showBarBackground
@@ -130,7 +130,7 @@ export const Navigation = memo(function Navigation({
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="group flex flex-col items-start lg:items-center gap-0.5 lg:gap-1 lg:absolute lg:left-1/2 lg:-translate-x-1/2 touch-target -ms-1 lg:ms-0"
+              className="nav-bar__brand group flex flex-col items-start lg:items-center gap-0.5 lg:gap-1 lg:absolute lg:left-1/2 lg:-translate-x-1/2 touch-target lg:ms-0"
               style={{
                 background: "none",
                 border: "none",
@@ -203,7 +203,7 @@ export const Navigation = memo(function Navigation({
               </div>
             </div>
 
-            <div className="flex lg:hidden items-center gap-1.5 ms-auto">
+            <div className="nav-bar__actions flex lg:hidden items-center shrink-0">
               <NavIconWrap compact>
                 <ThemeToggle />
               </NavIconWrap>
@@ -211,7 +211,7 @@ export const Navigation = memo(function Navigation({
                 <button
                   type="button"
                   onClick={handleBagClick}
-                  className="relative touch-target flex items-center justify-center min-w-[44px] min-h-[44px]"
+                  className="nav-bar__action-btn relative flex items-center justify-center"
                   style={{ color: navColor }}
                   aria-label="Shopping bag"
                 >
@@ -225,7 +225,7 @@ export const Navigation = memo(function Navigation({
                   onClick={
                     showMobileMenu ? closeMobileMenu : openMobileMenu
                   }
-                  className="touch-target flex items-center justify-center min-w-[44px] min-h-[44px]"
+                  className="nav-bar__action-btn flex items-center justify-center"
                   style={{ color: navColor }}
                   aria-label={showMobileMenu ? "Close menu" : "Open menu"}
                   aria-expanded={showMobileMenu}
@@ -321,7 +321,7 @@ function NavIconWrap({
   return (
     <div
       className={`flex items-center justify-center rounded-full ${
-        compact ? "" : ""
+        compact ? "nav-icon-wrap nav-icon-wrap--compact" : "nav-icon-wrap"
       }`}
       style={{
         background: "var(--nav-action-bg)",

@@ -11,13 +11,16 @@ export function BackToTop() {
       if (!ticking) {
         ticking = true;
         requestAnimationFrame(() => {
-          const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-          setIsVisible(scrollPercent > 0.5);
+          setIsVisible(window.scrollY >= window.innerHeight);
           ticking = false;
         });
       }
     };
 
+    const check = () => {
+      setIsVisible(window.scrollY >= window.innerHeight);
+    };
+    check();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -37,7 +40,7 @@ export function BackToTop() {
           whileHover={{ scale: 1.1, y: -2 }}
           whileTap={{ scale: 0.9 }}
           onClick={scrollToTop}
-          className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 z-[100] w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center safe-bottom touch-target"
+          className="back-to-top fixed z-[100] w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center touch-target"
           style={{
             backgroundColor: 'rgba(212, 175, 55, 0.12)',
             border: '1px solid rgba(212, 175, 55, 0.35)',
