@@ -74,7 +74,7 @@ const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 105,
-    url: "https://images.unsplash.com/photo-1590156118125-0968476e3157?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+    url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
     name: "Diamond Ring",
     nameAr: "خاتم الماس",
     category: "Jewellery",
@@ -153,8 +153,7 @@ const SHOP_ITEMS: ShopItem[] = [
   },
   {
     id: 112,
-    // original image returned 404; replaced with a working apparel image
-    url: "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
+    url: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800",
     name: "Structured Blazer",
     nameAr: "بليزر هيكلي",
     category: "Apparel",
