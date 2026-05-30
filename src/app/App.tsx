@@ -372,6 +372,9 @@ const ParallaxImage = memo(function ParallaxImage({
     ? image.url.replace(/w=1080/, 'w=600')
     : image.url;
 
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-15%' });
+
   if (lite) {
     return (
       <div
@@ -386,9 +389,6 @@ const ParallaxImage = memo(function ParallaxImage({
       </div>
     );
   }
-
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-15%' });
 
   return (
     <motion.div
@@ -532,6 +532,9 @@ const StickyParallaxImage = memo(function StickyParallaxImage({
   const stickyTop = 100 + index * 20;
   const imgSrc = lite ? src.replace(/w=1080/, 'w=600') : src;
 
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: '-15%' });
+
   if (lite) {
     return (
       <div className="relative mb-6 last:mb-0">
@@ -548,9 +551,6 @@ const StickyParallaxImage = memo(function StickyParallaxImage({
       </div>
     );
   }
-
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-15%' });
 
   return (
     <div

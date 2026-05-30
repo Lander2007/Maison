@@ -479,6 +479,9 @@ const ShopCard = memo(function ShopCard({
     </>
   );
 
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-10%" });
+
   if (lite) {
     return (
       <div
@@ -492,9 +495,6 @@ const ShopCard = memo(function ShopCard({
       </div>
     );
   }
-
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-10%" });
 
   return (
     <motion.div
